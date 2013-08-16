@@ -1,5 +1,0 @@
-@Parameters
-
-Entrance is added for every time when animal is present in the target sector for period longer than 'Entrance latency' time, that is
-the period after which an animal receives a shock.
-When an animal escapes the target sector for period shorter than 'Outside refractory' time the following entrance is not counted.

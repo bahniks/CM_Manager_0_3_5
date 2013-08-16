@@ -1,14 +1,6 @@
 @None
 
-Carousel Maze Manager (heretofore CMM) is a program for working with data from carousel
-maze gathered with Tracker (by Bio-Signal Group). It is tested with files from Tracker version 2.33, however, it is likely that it would work with files with similar output
-as well. $nn
-So far, CMM has two parts - $l$Processor$Process and $l$Explorer.$Explore $n The former
-is meant for general analysis of data from carousel maze. It's output is in a form
-of parameters computed from batch of data files. $n 
-The latter is meant for exploration of data from carousel maze data files. It's possible
-to interactively look at path travelled by animal that is showed as an animation with
-Explorer.
+Not yet available.
 
 
 

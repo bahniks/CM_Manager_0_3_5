@@ -21,7 +21,6 @@ along with Carousel Maze Manager.  If not, see <http://www.gnu.org/licenses/>.
 from tkinter import *
 from tkinter import ttk
 from tkinter import messagebox
-from urllib.request import urlopen
 from time import localtime, strftime
 
 import traceback
@@ -35,8 +34,6 @@ from processor import Processor
 from menu import MenuCM
 from filestorage import FileStorage
 from optionget import optionGet
-from optionwrite import optionWrite
-from dialogbox import DialogBox
 from version import version
 from window import placeWindow
 from tools import saveFileStorage, doesFileStorageRequiresSave
@@ -79,28 +76,10 @@ class GUI(Tk):
         # menu
         self["menu"] = MenuCM(self)
 
-        # checks for new messages and versions on the web
-        if optionGet("CheckMessages", True, "bool"):
-            self.onStart()
-
         if not optionGet("Developer", False, 'bool'):
             self.protocol("WM_DELETE_WINDOW", self.closeFun)
 
         self.mainloop()
-
-
-
-    def onStart(self):
-        "checks web for new version and post"
-        try:
-            self.checkNewVersion()
-        except Exception:
-            pass
-
-        try:
-            self.checkNewPost()
-        except Exception:
-            pass
 
 
     def closeFun(self):
@@ -111,39 +90,6 @@ class GUI(Tk):
             if answ:
                 saveFileStorage(self)                
         self.destroy()
-
-
-    def checkNewVersion(self):
-        "checks whether there is a new version available"
-        newVersion = self.returnSiteContent("http://www.cmmanagerweb.appspot.com/version").\
-                     split(".")
-        versionSeen = optionGet("DontShowVersion", version(), "list")
-        for i in range(3):
-            if int(newVersion[i]) > int(versionSeen[i]):
-                DialogBox(self, title = "New version available", message =
-                          self.returnSiteContent(
-                                        "http://www.cmmanagerweb.appspot.com/version/message"),
-                          dontShowOption = "DontShowVersion", optionValue = newVersion)
-                break            
-
-
-    def checkNewPost(self):
-        "checks whether there is some post with new information on the web"
-        currentPost = optionGet("WebPostNumber", 0, "int")
-        webPostNumber = int(self.returnSiteContent("http://www.cmmanagerweb.appspot.com/post"))
-        if  webPostNumber > currentPost:
-            DialogBox(self, "New information", self.returnSiteContent(
-                "http://www.cmmanagerweb.appspot.com/post/message"))
-            optionWrite("WebPostNumber", webPostNumber)
-
-
-    def returnSiteContent(self, link):
-        "return text obtained from web site"
-        site = urlopen(link)
-        text = site.read()
-        site.close()
-        text = str(text)[2:-1]
-        return text       
 
 
     def checkProcessing(self, event):
@@ -160,17 +106,20 @@ def main():
     if optionGet("Developer", False, 'bool'):
         GUI()
     else:
-        try:
-            for directory in ["Bugs", "Logs", "Selected files"]:
-                dirname = os.path.join(os.getcwd(), "Stuff", directory)
-                if not os.path.exists(dirname):
-                    os.mkdir(dirname)
-            filepath = os.path.join(os.getcwd(), "Stuff", "Bugs")
-            writeTime = localtime()
-            filename = os.path.join(filepath, strftime("%y_%m_%d_%H%M%S", writeTime) +
-                                    "_bugs" + ".txt")
-            with open(filename, mode = "w") as bugfile:
-                sys.stderr = bugfile
-                GUI()
-        finally:
-            bugfile.close()
+        for directory in ["Bugs", "Logs", "Selected files"]:
+            dirname = os.path.join(os.getcwd(), "Stuff", directory)
+            if not os.path.exists(dirname):
+                os.mkdir(dirname)
+        filepath = os.path.join(os.getcwd(), "Stuff", "Bugs")
+        writeTime = localtime()
+        filename = os.path.join(filepath, strftime("%y_%m_%d_%H%M%S", writeTime) +
+                                "_bugs" + ".txt")
+        with open(filename, mode = "w") as bugfile:
+            sys.stderr = bugfile
+            GUI()
+
+
+
+if __name__ == "__main__":
+    os.chdir(os.path.dirname(os.path.dirname(os.getcwd())))
+    main()
