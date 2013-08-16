@@ -1,0 +1,22 @@
+@Parameters
+
+Total distance is a path travelled by an animal during the session.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,6 @@
+@Process
+
+Parameters in CMM are divided in several groups. Advanced parameters differ from basic parameters in that they may be sensitive to 
+correct settings. Settings should be therefore consulted before processing. Advanced parameters settings can be changed in Advanced
+option menu. $n
+

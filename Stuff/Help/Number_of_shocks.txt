@@ -1,0 +1,4 @@
+@Parameters
+
+Number of shocks is similar as $l$Number_of_entrances parameter. Difference between the two is that while in number of shocks
+parameter every shock is counted, in number of entrances parameter only the first one is counted.

@@ -1,0 +1,6 @@
+@Parameters
+
+Maximimum time avoided shows maximum continous time that an animal spent outside of
+the target sector.
+
+
