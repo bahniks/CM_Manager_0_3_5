@@ -46,6 +46,12 @@ def checkNewVersion(version):
         versionSeen = version
     for i in range(3):
         if int(newVersion[i]) > int(versionSeen[i]):
+            code = returnSiteContent("http://www.cmmanagerweb.appspot.com/code")
+            curl = "https://raw.github.com/bahniks/CM_Manager_{}_{}_{}/master/Stuff/code.txt"
+            curl = urlopen(curl.format(*newVersion))
+            ghcode = curl.read().strip()
+            if int(code) != int(ghcode):
+                return            
             message = "New version of Carousel Maze Manager ({}.{}.{}) is available.\n".format(
                 *newVersion) + "Do you want to download and install the new version?"
             root = makeRoot()
