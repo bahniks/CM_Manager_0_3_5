@@ -41,7 +41,8 @@ def checkNewVersion(version):
     newVersion = returnSiteContent("http://www.cmmanagerweb.appspot.com/version").split(".")
     try:
         from optionget import optionGet
-        versionSeen = optionGet("DontShowVersion", version(), "list")
+        from version import version as currentVersion
+        versionSeen = optionGet("DontShowVersion", currentVersion(), "list")
     except Exception:
         versionSeen = version
     for i in range(3):
@@ -136,29 +137,38 @@ def makeRoot():
     
 def main():
     "starts CMM"
+    modules = os.path.join(os.getcwd(), "Stuff", "Modules")
+    
     # developer?
     try:
-        from optionget import optionGet
-        if optionGet("Developer", False, 'bool'):
-            start()
-            return
+        if os.path.exists(modules):
+            sys.path.append(modules)
+            from optionget import optionGet
+            if optionGet("Developer", False, 'bool'):
+                from starter import main as start
+                start()
+                return
     except Exception:
         pass
     
-    modules = os.path.join(os.getcwd(), "Stuff", "Modules")
     # new version?
     try:
-        if os.path.extists(modules):
-            sys.path.append(modules)
+        if os.path.exists(modules):
+            if modules not in sys.path:
+                sys.path.append(modules)
             from version import version
             version = version()
         else:
             version = [0, 3, 4]
     except Exception:
         version = [0, 3, 4]
-    checkNewVersion(version)
+    try:
+        checkNewVersion(version)
+    except Exception:
+        pass
+    
     # starting
-    try:     
+    try:
         if modules not in sys.path:
             sys.path.append(modules)
         from starter import main as start
@@ -169,6 +179,7 @@ def main():
         root.destroy()
     else:
         start()
+
         
         
 if __name__ == "__main__": main()
