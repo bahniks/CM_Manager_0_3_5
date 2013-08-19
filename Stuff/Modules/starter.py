@@ -50,10 +50,10 @@ class GUI(Tk):
         
         '''
         used when size of the window is changed for placeWindow arguments     
-        self.after(50, lambda: print(self.winfo_width()))
-        self.after(50, lambda: print(self.winfo_height()))
+        self.after(250, lambda: print(self.winfo_width()))
+        self.after(250, lambda: print(self.winfo_height()))
         '''
-        placeWindow(self, 1010, 786)
+        placeWindow(self, 1010, 809)
 
         # notebook
         self.selectFunction = ttk.Notebook(self)

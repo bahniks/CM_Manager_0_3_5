@@ -19,11 +19,13 @@ along with Carousel Maze Manager.  If not, see <http://www.gnu.org/licenses/>.
 
 from tkinter import *
 from tkinter import ttk, messagebox
+from urllib.request import urlopen
 import webbrowser
 import os.path
 import os
 
 from options import OptionsCM, AdvancedOptions
+from optionwrite import optionWrite
 from helpCMM import HelpCM
 from tools import saveFileStorage, loadFileStorage
 from window import placeWindow
@@ -53,11 +55,19 @@ class MenuCM(Menu):
         self.menu_options.add_command(label = "Parameter settings", command = self.advOptions)
         self.menu_tools.add_command(label = "Save selected files", command = self.saveLoadedFiles)
         self.menu_tools.add_command(label = "Load selected files", command = self.loadSavedFiles)
-        self.menu_help.add_command(label = "Help", command = self.helpCM)
         self.menu_help.add_command(label = "About", command = self.about)
+        self.menu_help.add_command(label = "Check for updates", command = self.checkUpdates)
+        self.menu_help.add_command(label = "Citation", command = self.citation)
+        self.menu_help.add_command(label = "Help", command = self.helpCM)
 
     def exitCM(self):
         self.root.closeFun()
+
+    def checkUpdates(self):
+        Updates(self)
+
+    def citation(self):
+        Citation(self)
 
     def options(self):
         OptionsCM(self.root)
@@ -141,6 +151,83 @@ class AboutCM(Toplevel):
         except Exception:
             self.bell()
 
+
+
+class Updates(Toplevel):
+    def __init__(self, root):
+        super().__init__(root)
+        self["padx"] = 4
+        self["pady"] = 4
+
+        self.version = version.version()        
+        self.title("Updates")
+        self.resizable(FALSE, FALSE)
+        placeWindow(self, 488, 127)
+
+        try:
+            newVersion = self.checkNewVersion()
+            if newVersion:
+                available = ("There is a new version ({}.{}.{}) available.\n".format(*newVersion) +
+                             "Restart CMM to install the update.")
+                optionWrite("DontShowVersion", self.version)
+            else:
+                available = "There is no new version available."
+        except Exception:
+            available = "Unable to get information about the newest version."
+
+        text = "Your current version is {1}.{2}.{3}.\n\n{0}".format(available, *self.version)
+
+        self.text = Text(self, height = 4, width = 58, relief = "flat",
+                         background = self.cget("background"))
+        self.text.grid(column = 0, row = 0, padx = 6, pady = 6)   
+        self.text.insert("end", text)
+
+        self.close = ttk.Button(self, text = "Close", command = self.destroy)
+        self.close.grid(column = 0, row = 1, pady = 7)
+
+    def returnSiteContent(self, link):
+        "return text obtained from web site"
+        site = urlopen(link)
+        text = site.read()
+        site.close()
+        text = str(text)[2:-1]
+        return text
+
+    def checkNewVersion(self):
+        "checks whether there is a new version available"
+        url = "http://www.cmmanagerweb.appspot.com/version"
+        newVersion = self.returnSiteContent(url).split(".")
+        for i in range(3):
+            if int(newVersion[i]) > int(self.version[i]):
+                return newVersion        
+        else:
+            return None
+
+
+class Citation(Toplevel):
+    def __init__(self, root):
+        super().__init__(root)
+        self["padx"] = 4
+        self["pady"] = 4
+      
+        self.title("Citation")
+        self.resizable(FALSE, FALSE)
+        placeWindow(self, 488, 135)
+
+        v = version.version()
+        year = version.date().split()[2]
+        url = "https://github.com/bahniks/CM_Manager_{}_{}_{}".format(*v)
+        text = ("Please cite this software as:\n\n" +
+                "Bahník, Š. ({}). Carousel Maze Manager (Version {}.{}.{}) ".format(year, *v) +
+                "[Software]. Available from {}".format(url))
+
+        self.text = Text(self, height = 5, width = 70, relief = "flat", wrap = "word",
+                         background = self.cget("background"))
+        self.text.grid(column = 0, row = 0, padx = 6, pady = 6)   
+        self.text.insert("end", text)
+
+        self.close = ttk.Button(self, text = "Close", command = self.destroy)
+        self.close.grid(column = 0, row = 1, pady = 7)
 
 
 

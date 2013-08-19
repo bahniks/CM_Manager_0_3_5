@@ -82,17 +82,20 @@ def checkNewVersion(version):
     
 def download(version):
     "downloads the version from github"
+    # initializing
     stuffname = os.path.join(os.getcwd(), "Stuff")
     if not os.path.exists(stuffname):
         os.mkdir(stuffname)
     url = "https://github.com/bahniks/CM_Manager_{}_{}_{}/archive/master.zip".format(*version)
     filename = os.path.join(stuffname, "CMM.zip")
-
+    
+    # downloading
     with open(filename, mode = "wb") as outfile:
         with urlopen(url) as infile:
             for line in infile:
                 outfile.write(line)
                 
+    # extracting            
     if zipfile.is_zipfile(filename):
         extractedFile = zipfile.ZipFile(filename, mode = "r")
         commonname = os.path.commonprefix(extractedFile.namelist())
@@ -100,31 +103,34 @@ def download(version):
             if not os.path.basename(file).startswith("."):
                 extractedFile.extract(file, path = stuffname)
     extractedFile.close()
-
     os.remove(filename)
     unzipped = os.path.join(stuffname, commonname)
-
+    
+    # updating help files and modules
     for directory in ["Help", "Modules"]:
         dirname = os.path.join(stuffname, directory)
         shutil.rmtree(dirname, ignore_errors = True)
         shutil.move(os.path.join(unzipped, "Stuff", directory), stuffname)
-
+        
+    # updating parameters
     if not os.path.exists(os.path.join(stuffname, "Parameters")):
         os.mkdir(os.path.join(stuffname, "Parameters"))
     for file in os.listdir(os.path.join(unzipped, "Stuff", "Parameters")):        
         old = os.path.join(stuffname, "Parameters", file)       
         if not os.path.exists(old):
             new = os.path.join(unzipped, "Stuff", "Parameters", file)
-            os.rename(new, old)        
-
+            os.rename(new, old)
+            
+    # updating files in Stuff directory
     for file in os.listdir(os.path.join(unzipped, "Stuff")):
         new = os.path.join(unzipped, "Stuff", file)
-        if os.path.isfile(new):
+        if os.path.isfile(new) and file != "code.txt":
             old = os.path.join(stuffname, file)       
             if os.path.exists(old):
                 os.remove(old)
             os.rename(new, old)
-
+            
+    # removing the extracted file
     shutil.rmtree(unzipped, ignore_errors = True)
 
 
@@ -175,7 +181,7 @@ def main():
     except Exception as e:
         root = makeRoot()
         messagebox.showinfo(title = "Error", icon = "error", detail = e,
-                            message = "Epic fail!\nTry to start CMM again.")
+                            message = "Unable to start CMM! Try again.")
         root.destroy()
     else:
         start()
