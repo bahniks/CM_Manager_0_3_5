@@ -19,8 +19,7 @@ along with Carousel Maze Manager.  If not, see <http://www.gnu.org/licenses/>.
 
 from tkinter.filedialog import askdirectory
 from tkinter import *
-from tkinter import ttk, messagebox
-import os.path
+from tkinter import ttk, messagebox, colorchooser
 import os
 
 
@@ -56,7 +55,7 @@ class ChooseDirectoryFrame(ttk.Labelframe):
         super().__init__(root, text = text)
         
         self.root = root
-        self.currentDir = optionGet(optionName, default, "str")
+        self.currentDir = os.path.normpath(optionGet(optionName, default, "str"))
 
         self.directory = StringVar()
         self.directory.set(self.currentDir)
@@ -74,7 +73,7 @@ class ChooseDirectoryFrame(ttk.Labelframe):
         newDirectory = askdirectory(parent = self.root, initialdir = self.currentDir,
                                  title = "Choose a directory")
         if newDirectory:
-            self.directory.set(newDirectory)
+            self.directory.set(os.path.normpath(newDirectory))
 
     def get(self):
         "returns chosen directory"
@@ -86,6 +85,7 @@ class OptionsCM(Toplevel):
     "options window reachable from menu"
     def __init__(self, root):
         super().__init__(root)
+        self.root = root
         self.title("Options")
         self.grab_set()
         self.focus_set()
@@ -174,10 +174,13 @@ class OptionsCM(Toplevel):
         self.saveBut = ttk.Button(self.buttonFrame, text = "Save", command = self.saveFun)
         self.okBut = ttk.Button(self.buttonFrame, text = "Ok", command = self.okFun)
         self.cancelBut = ttk.Button(self.buttonFrame, text = "Cancel", command = self.cancelFun)
+        self.commentColor = ttk.Button(self, text = "Comment color",
+                                       command = self.chooseCommentColor)
 
         self.saveBut.grid(column = 0, row = 0, padx = 3, pady = 2, sticky = (W))
         self.okBut.grid(column = 1, row = 0, padx = 3, pady = 2)
         self.cancelBut.grid(column = 2, row = 0, padx = 3, pady = 2, sticky = (E))
+        self.commentColor.grid(column = 3, row = 3, padx = 2, pady = 2)
 
         # grid of self contents        
         self.parametersF.grid(row = 0, column = 0, columnspan = 4, sticky = (N, W), padx = 4,
@@ -211,8 +214,6 @@ class OptionsCM(Toplevel):
                     "'" + self.processorOptions.removeReflectionsWhere.get() + "'")
         optionWrite("DefSaveTags", self.processorOptions.saveTags.get())
         optionWrite("DefSaveComments", self.processorOptions.saveComments.get())
-        optionWrite("DefClearFilesAfterProcessing",
-                    self.processorOptions.clearFilesAfterProcessing.get())
         optionWrite("DefShowResults", self.processorOptions.showResults.get())
         optionWrite("CheckMessages", bool(self.messageCheckingVar.get()))
         for option in self.directoryOptions:
@@ -225,6 +226,17 @@ class OptionsCM(Toplevel):
                                     detail = "Choose an existing directory.")
                 return False
         return True
+
+
+    def chooseCommentColor(self):
+        "opens dialog for choosing color of comments and immediately saves the selected color"
+        color = colorchooser.askcolor(initialcolor = optionGet("CommentColor", "grey90", 'str'),
+                                      parent = self)
+        if color and len(color) > 1:
+            selected = color[1]
+            optionWrite("CommentColor", "'" +  selected + "'")
+            self.root.explorer.fileFrame.tree.tag_configure("comment", background = selected)
+            self.root.controller.contentTree.tag_configure("comment", background = selected)
                 
 
     def okFun(self):

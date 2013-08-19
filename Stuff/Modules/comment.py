@@ -22,6 +22,7 @@ from tkinter import ttk
 
 
 from window import placeWindow
+from optionget import optionGet
 
 
 class Comment(Toplevel):
@@ -77,7 +78,7 @@ class Comment(Toplevel):
 
 
 def commentColor():
-    return "grey90"
+    return optionGet("CommentColor", "grey90", 'str')
 
 
 

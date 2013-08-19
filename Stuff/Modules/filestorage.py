@@ -21,7 +21,7 @@ from tkinter.filedialog import askopenfilenames, askdirectory, askopenfilename
 from tkinter import *
 from os.path import basename
 from tkinter import ttk
-from collections import defaultdict
+from collections import defaultdict, deque
 import os.path
 import os
 
@@ -55,14 +55,12 @@ class FileStorage(object):
     def addFiles(self, addedFiles):
         "adds new files into filestorage - sorted into wrong and valid files"
         newWrong, newFiles = addedFiles[0], addedFiles[1]
-
-        # removes wrongfiles that are already added
-        oldWrong = set(self.wrongfiles + self.arenafiles)
-        for file in newWrong:
-            if file not in oldWrong:
-                self.wrongfiles.append(file)
         
-        # removes arenafiles that are already added            
+        old = set(self.wrongfiles + self.arenafiles)
+        for file in newWrong:
+            if file not in old:
+                self.wrongfiles.append(file)
+                
         oldFiles = set(self.arenafiles)
         for file in newFiles:
             if file not in oldFiles:
@@ -175,6 +173,7 @@ class FileStorage(object):
 
         for pair in pairs:
             self.pairFiles(pair)
+
 
 
 class ShowFiles(Toplevel):
@@ -488,6 +487,8 @@ class ShowFiles(Toplevel):
 
 class FileStorageFrame(ttk.Frame):
     "frame containing buttons for adding and removing files from FileStorage class"
+    lastOpenedDirectory = None
+    
     def __init__(self, root, parent = ""):
         super().__init__(root)
 
@@ -566,7 +567,7 @@ class FileStorageFrame(ttk.Frame):
         "asks uset to select files and adds them to filestorage (via addFiles)"
         self.root.root.config(cursor = "wait")
         self.root.root.update()
-        self.addFiles(getFiles())
+        self.addFiles(self.getFiles())
         self.root.root.config(cursor = "")
         self.root.focus_set()
         
@@ -576,7 +577,7 @@ class FileStorageFrame(ttk.Frame):
         for processing"""
         self.root.root.config(cursor = "wait")
         self.root.root.update()
-        self.addFiles(getDirectory())
+        self.addFiles(self.getDirectory())
         self.root.root.config(cursor = "")
         self.root.focus_set()
 
@@ -686,9 +687,48 @@ class FileStorageFrame(ttk.Frame):
             menu.add_command(label = "Show tracks", command = lambda: self.showTracks())
         menu.post(event.x_root, event.y_root)
 
+
     def showTracks(self):
         "opens ShowTracks widget"
         showTracks = ShowTracks(self, self.fileStorage.arenafiles, self.fileStorage.arenafiles[0])
+
+
+    def getFiles(self):
+        """asks to select files and returns list of files that doesn't contain 'arena' or 'room'
+        in their names and another list of files containing 'arena' in their name"""
+        if FileStorageFrame.lastOpenedDirectory:
+            initial = FileStorageFrame.lastOpenedDirectory
+        else:
+            initial = optionGet("FileDirectory", os.getcwd(), "str")
+        filenames = str(askopenfilenames(initialdir = initial,
+                                         filetypes = [("Data files", "*.dat")]))
+        if filenames == "":
+            return [], []
+        if "}" in filenames and "{" in filenames:
+            filenames = filenames[1:-1].split("} {")
+        else:
+            filenames = [x + ".dat" for x in filenames.split(".dat ")]
+            if filenames[-1].endswith(".dat.dat"):
+                filenames[-1] = filenames[-1][:-4]
+        if filenames and os.path.isfile(filenames[0]):
+            FileStorageFrame.lastOpenedDirectory = os.path.dirname(filenames[0])            
+        return recognizeFiles(filenames)
+
+
+    def getDirectory(self):
+        "recognizes all .dat files in a directory and calls recognizeFiles function"
+        cmfiles = []
+        if FileStorageFrame.lastOpenedDirectory:
+            initial = FileStorageFrame.lastOpenedDirectory
+        else:
+            initial = optionGet("FileDirectory", os.getcwd(), "str")
+        selected = askdirectory(initialdir = initial)
+        FileStorageFrame.lastOpenedDirectory = selected
+        for directory in os.walk(selected):
+            for file in directory[2]:
+                if os.path.splitext(file)[1] == ".dat":
+                    cmfiles.append(os.path.join(directory[0], file))
+        return recognizeFiles(cmfiles)
 
 
 
@@ -700,106 +740,37 @@ def recognizeFiles(filenames):
     matching files are those for which other file with the same name except from 'room' 'Arena'
     etc. exists in the same directory"""
     filenames.sort()
-    filenames = [os.path.join(tupl[0], tupl[1]) for tupl in
-                 [os.path.split(file) for file in filenames]]
+    filenames = deque(os.path.normpath(file) for file in filenames)
     arenaFiles = []
     nonmatchingFiles = []
     while filenames:
-        if "Arena" in basename(filenames[0]):
-            splitName = os.path.split(filenames[0])
-            roomName = os.path.join(splitName[0], splitName[1].replace("Arena", "Room"))
+        first = filenames.popleft()
+        name = basename(first)
+        splitName = os.path.split(first)
+        if "Arena" in name or "arena" in name:
+            base = splitName[1].replace("Arena", "Room").replace("arena", "room")
+            roomName = os.path.join(splitName[0], base)
             if roomName in filenames:
-                arenaFiles.append(filenames[0])
-                filenames = filenames[1:]
+                arenaFiles.append(first)             
                 filenames.remove(roomName)
-                continue
             elif os.path.exists(roomName):
-                arenaFiles.append(filenames[0])
-                filenames = filenames[1:]
-                continue
+                arenaFiles.append(first)  
             else:
-                nonmatchingFiles.append(filenames[0])
-                filenames = filenames[1:]
-                continue
-        elif "arena" in basename(filenames[0]):
-            splitName = os.path.split(filenames[0])
-            roomName = os.path.join(splitName[0], splitName[1].replace("arena", "room"))
-            if roomName in filenames:
-                arenaFiles.append(filenames[0])
-                filenames = filenames[1:]
-                filenames.remove(roomName)
-                continue
-            elif os.path.exists(roomName):
-                arenaFiles.append(filenames[0])
-                filenames = filenames[1:]
-                continue
-            else:
-                nonmatchingFiles.append(filenames[0])
-                filenames = filenames[1:]
-                continue
-        elif "Room" in basename(filenames[0]):
-            splitName = os.path.split(filenames[0])
-            arenaName = os.path.join(splitName[0], splitName[1].replace("Room", "Arena"))
+                nonmatchingFiles.append(first)
+        elif "Room" in name or "room" in name:
+            base = splitName[1].replace("Room", "Arena").replace("room", "arena")
+            arenaName = os.path.join(splitName[0], base)
             if arenaName in filenames:
                 arenaFiles.append(arenaName)
-                filenames = filenames[1:]
                 filenames.remove(arenaName)
-                continue
             elif os.path.exists(arenaName):
                 arenaFiles.append(arenaName)
-                filenames = filenames[1:]
-                continue
             else:
-                nonmatchingFiles.append(filenames[0])
-                filenames = filenames[1:]
-                continue                
-        elif "room" in basename(filenames[0]):
-            splitName = os.path.split(filenames[0])
-            arenaName = os.path.join(splitName[0], splitName[1].replace("room", "arena"))
-            if arenaName in filenames:
-                arenaFiles.append(arenaName)
-                filenames = filenames[1:]
-                filenames.remove(arenaName)
-                continue
-            elif os.path.exists(arenaName):
-                arenaFiles.append(arenaName)
-                filenames = filenames[1:]
-                continue
-            else:
-                nonmatchingFiles.append(filenames[0])
-                filenames = filenames[1:]
-                continue
+                nonmatchingFiles.append(first)                      
         else:
-            nonmatchingFiles.append(filenames[0])
-            filenames = filenames[1:]
+            nonmatchingFiles.append(first)
     return nonmatchingFiles, arenaFiles 
 
-
-def getFiles():
-    """asks to select files and returns list of files that doesn't contain 'arena' or 'room'
-    in their names and another list of files containing 'arena' in their name"""
-    filenames = str(askopenfilenames(initialdir = optionGet("FileDirectory", os.getcwd(), "str"),
-                                     filetypes = [("Data files", "*.dat")]))
-    if filenames == "":
-        return [], []
-    if "}" in filenames and "{" in filenames:
-        filenames = filenames[1:-1].split("} {")
-    else:
-        filenames = [x + ".dat" for x in filenames.split(".dat ")]
-        if filenames[-1].endswith(".dat.dat"):
-            filenames[-1] = filenames[-1][:-4]
-    return recognizeFiles(filenames)
-
-
-def getDirectory():
-    "recognizes all .dat files in a directory and calls recognizeFiles function"
-    cmfiles = []
-    for directory in os.walk(askdirectory(initialdir = optionGet("FileDirectory", os.getcwd(),
-                                                                 "str"))):
-        for file in directory[2]:
-            if os.path.splitext(file)[1] == ".dat":
-                cmfiles.append(os.path.join(directory[0], file))
-    return recognizeFiles(cmfiles)
 
 
 

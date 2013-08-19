@@ -267,7 +267,6 @@ class Processor(ttk.Frame):
         writeResults(output, results)
         self.log.writeLog()
         self._setStatusEndProgressWindow()
-        self._removeFilesAfterProcessing()
 
         if self.someProblem:
             ProcessingProblemDialog(self, self.log.filename)
@@ -287,15 +286,6 @@ class Processor(ttk.Frame):
                 self.status.set("File was processed.")
             else:
                 self.status.set("File was processed successfully.")        
-
-    def _removeFilesAfterProcessing(self):
-        if self.optionFrame.clearFilesAfterProcessing.get():
-            for file in self.filesToProcess:
-                self.fileStorage.arenafiles.remove(file)
-            self.fileStorageFrame.chosenVar.set(len(self.fileStorage))
-            if not self.fileStorage.arenafiles:
-                self.fileStorageFrame.removeFiles.state(["disabled"]) 
-                self.process.state(["disabled"])
 
                 
     def checkProcessing(self):
@@ -638,15 +628,12 @@ class OptionFrame(ttk.Labelframe):
         self.removeReflectionsWhere = StringVar()
         self.saveTags = BooleanVar()
         self.saveComments = BooleanVar()
-        self.clearFilesAfterProcessing = BooleanVar()
         self.showResults = BooleanVar()
 
         self.processWhat.set(optionGet("ProcessWhat", "all files", "str"))
         self.removeReflectionsWhere.set(optionGet("RemoveReflectionsWhere", "no files", "str"))
         self.saveTags.set(optionGet("DefSaveTags", False, "bool"))
         self.saveComments.set(optionGet("DefSaveComments", False, "bool"))
-        self.clearFilesAfterProcessing.set(optionGet("DefClearFilesAfterProcessing", False,
-                                                     "bool"))
         self.showResults.set(optionGet("DefShowResults", False, "bool"))        
 
         # labels
@@ -654,14 +641,12 @@ class OptionFrame(ttk.Labelframe):
         self.removeReflectionsLabel = ttk.Label(self, text = "Remove reflections in")
         self.saveTagsLabel = ttk.Label(self, text = "Save tags")
         self.saveCommentsLabel = ttk.Label(self, text = "Save comments")
-        self.clearFilesLabel = ttk.Label(self, text = "Clear files after processing")
         self.showResultsLabel = ttk.Label(self, text = "Show results after processing")
 
         self.processLabel.grid(column = 0, row = 0, sticky = E, padx = 3)
         self.removeReflectionsLabel.grid(column = 0, row = 1, sticky = E, padx = 3)
         self.saveTagsLabel.grid(column = 0, row = 2, sticky = E, padx = 3)
         self.saveCommentsLabel.grid(column = 0, row = 3, sticky = E, padx = 3)
-        self.clearFilesLabel.grid(column = 0, row = 4, sticky = E, padx = 3)
         self.showResultsLabel.grid(column = 0, row = 5, sticky = E, padx = 3)
 
         # comboboxes
@@ -685,9 +670,6 @@ class OptionFrame(ttk.Labelframe):
         self.saveCommentsCheckbutton = ttk.Checkbutton(self, variable = self.saveComments,
                                                        onvalue = True, offvalue = False)
         self.saveCommentsCheckbutton.grid(column = 1, row = 3)
-        self.clearFilesCheckbutton = ttk.Checkbutton(self, onvalue = True, offvalue = False,
-                                                     variable = self.clearFilesAfterProcessing)
-        self.clearFilesCheckbutton.grid(column = 1, row = 4)
         self.showResultsCheckbutton = ttk.Checkbutton(self, onvalue = True, offvalue = False,
                                                       variable = self.showResults)
         self.showResultsCheckbutton.grid(column = 1, row = 5)
@@ -710,8 +692,6 @@ class OptionFrame(ttk.Labelframe):
                 return True
         elif where == "all files":
             return True
-        else:
-            raise Exception("Error in OptionFrame.removeReflections method") # odstranit
 
 
     def processFile(self, file):
@@ -728,8 +708,6 @@ class OptionFrame(ttk.Labelframe):
                 return False
             else:
                 return True        
-        else:
-            raise Exception("Error in OptionFrame.processFile method") # odstranit
 
 
 

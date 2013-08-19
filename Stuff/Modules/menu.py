@@ -21,7 +21,6 @@ from tkinter import *
 from tkinter import ttk, messagebox
 from urllib.request import urlopen
 import webbrowser
-import os.path
 import os
 
 from options import OptionsCM, AdvancedOptions
@@ -53,6 +52,7 @@ class MenuCM(Menu):
         self.menu_file.add_command(label = "Exit", command = self.exitCM)
         self.menu_options.add_command(label = "Options", command = self.options)
         self.menu_options.add_command(label = "Parameter settings", command = self.advOptions)
+        self.menu_options.add_command(label = "Reset all options", command = self.resetOptions)
         self.menu_tools.add_command(label = "Save selected files", command = self.saveLoadedFiles)
         self.menu_tools.add_command(label = "Load selected files", command = self.loadSavedFiles)
         self.menu_help.add_command(label = "About", command = self.about)
@@ -80,6 +80,15 @@ class MenuCM(Menu):
         
     def loadSavedFiles(self):
         loadFileStorage(self.root)
+
+    def resetOptions(self):
+        text = ("Are you sure that you want to reset all options (including parameter settings)"
+                " to default settings?")
+        answ = messagebox.askyesno(message = text, title = "Reset options?", icon = "question",
+                                   default = "no")
+        filename = os.path.join(os.getcwd(), "Stuff", "Options.txt")
+        if answ and os.path.exists(filename):
+            os.remove(filename)            
 
     def helpCM(self):
         try:
