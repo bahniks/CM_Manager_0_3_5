@@ -28,7 +28,7 @@ from comment import Comment, commentColor
 
 class ShowTracks(Toplevel):
     "displays Canvases with trajectory of a selected track"
-    def __init__(self, root, tracks, nameA, time = "auto", controlled = False):
+    def __init__(self, root, tracks, nameA, controlled = False):
         super().__init__(root)
         self["padx"] = 4
         self["pady"] = 4
@@ -63,7 +63,7 @@ class ShowTracks(Toplevel):
                  .format(canvasNumber, canvasNumber % self.columns, canvasNumber // self.columns))
 
         # fileTree (the entire right part)
-        self.fileTree = FileTree(self, files = self.tracks, time = time, controlled = controlled)
+        self.fileTree = FileTree(self, files = self.tracks, controlled = controlled)
         self.fileTree.grid(column = 1, row = 0, sticky = (N, S, E, W), padx = 3, pady = 3) 
         
         # initialization of selected track
@@ -297,7 +297,7 @@ class TrackCanvas(Canvas):
 
 class FileTree(ttk.Frame):
     "displays files in ShowTracks class"
-    def __init__(self, root, files, time = "auto", controlled = False):
+    def __init__(self, root, files, controlled = False):
         super().__init__(root)
 
         self.rowconfigure(0, weight = 1)
@@ -309,9 +309,6 @@ class FileTree(ttk.Frame):
         self.fileStorage = self.root.fileStorage
         self.index = self.root.index # which file is selected when the FileTree is initialized
         self.usedProblemOrder = -1 # by which method is the tree ordered (index)
-        if time == "auto":
-            time = (optionGet("DefStartTime", 0, ['int', 'float']),
-                    optionGet("DefStopTime", 20, ['int', 'float']))
 
         # tree
         self.treeFrame = ttk.Frame(self)
@@ -387,11 +384,11 @@ class FileTree(ttk.Frame):
         self.timeLabFrame = ttk.Labelframe(self.bottomFrame, text = "Time")
         self.timeLabFrame.grid(column = 3, row = 0, rowspan = 2, sticky = N, pady = 3)
         self.timeLabFrame.root = self.root
-        
-        self.timeFrame = TimeFrame(self.timeLabFrame, onChange = True)
+    
+        self.timeFrame = TimeFrame(self.timeLabFrame, onChange = True, observe = False)
         self.timeFrame.grid(column = 0, row = 0)
-        self.timeFrame.timeVar.set(time[1])
-        self.timeFrame.startTimeVar.set(time[0])
+        self.timeFrame.timeVar.set(TimeFrame.stop)
+        self.timeFrame.startTimeVar.set(TimeFrame.start)
 
         # remove reflections checkbutton
         self.removeReflectionsVar = BooleanVar()

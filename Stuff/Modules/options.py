@@ -151,7 +151,7 @@ class OptionsCM(Toplevel):
 
         # default time
         self.timeLabFrame = ttk.Labelframe(self, text = "Default time")
-        self.timeFrame = TimeFrame(self.timeLabFrame)
+        self.timeFrame = TimeFrame(self.timeLabFrame, observe = False)
         self.timeFrame.grid(row = 0, column = 0)
 
         # processor options

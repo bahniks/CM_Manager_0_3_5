@@ -29,8 +29,16 @@ from optionget import optionGet
 
 class TimeFrame(ttk.Frame):
     "frame containing entries for choosing starting and stopping time"
-    def __init__(self, root, onChange = False):
+    instances = []
+    start = optionGet("DefStartTime", 0, ['int', 'float'])
+    stop = optionGet("DefStopTime", 20, ['int', 'float'])
+    
+    def __init__(self, root, onChange = False, observe = True):
         super().__init__(root)
+        
+        if observe:
+            TimeFrame.instances.append(self)
+        self.observe = observe
 
         self.root = root
         self.onChange = onChange
@@ -75,7 +83,11 @@ class TimeFrame(ttk.Frame):
             self.timeVar.set("20")
             self.bell()
         elif self.onChange:
-            self.root.root.setTime()
+                self.root.root.setTime()
+        if self.observe:
+            for tf in TimeFrame.instances:
+                tf.timeVar.set(self.timeVar.get())
+                TimeFrame.stop = self.timeVar.get()
         return True
 
     def validateStart(self, newValue):
@@ -85,6 +97,10 @@ class TimeFrame(ttk.Frame):
             self.bell()
         elif self.onChange:
             self.root.root.setTime()
+        if self.observe:
+            for tf in TimeFrame.instances:
+                tf.startTimeVar.set(self.startTimeVar.get())
+                TimeFrame.start = self.startTimeVar.get()
         return True
 
     def changeState(self, state):

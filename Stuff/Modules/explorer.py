@@ -64,6 +64,7 @@ class Explorer(ttk.Frame):
         self.showTrackVar = BooleanVar()
         self.removeReflectionsVar = BooleanVar()
         self.showShocksVar = BooleanVar()
+        self.showTailVar = BooleanVar()
         self.saveWhatVar = StringVar()
         self.saveWhichFilesVar = StringVar()
 
@@ -73,6 +74,7 @@ class Explorer(ttk.Frame):
         self.showTrackVar.set(False)
         self.removeReflectionsVar.set(False)
         self.showShocksVar.set(True)
+        self.showTailVar.set(False)
         self.saveWhatVar.set("both frames")
         self.saveWhichFilesVar.set("current")
         self.selectedParameter.set("")
@@ -115,6 +117,8 @@ class Explorer(ttk.Frame):
         self.showShocks = ttk.Checkbutton(self.optionsLF, text = "Show shocks",
                                           variable = self.showShocksVar,
                                           command = self.toggleShocks)
+        self.showTail = ttk.Checkbutton(self.optionsLF, text = "Show tail",
+                                        variable = self.showTailVar, command = self.toggleTail)
 
         # radiobutton
         self.showTrack = ttk.Radiobutton(self.optionsLF, text = "Show track",
@@ -209,6 +213,7 @@ class Explorer(ttk.Frame):
 
         self.removeReflections.grid(column = 0, row = 2, padx = 2, pady = 2, sticky = (N, W))
         self.showShocks.grid(column = 0, row = 3, padx = 2, pady = 2, sticky = (N, W))
+        self.showTail.grid(column = 0, row = 4, padx = 2, pady = 2, sticky = (N, W))
 
         self.showAnimation.grid(column = 0, row = 0, padx = 2, pady = 1, sticky = (N, W))
         self.showTrack.grid(column = 0, row = 1, padx = 2, pady = 1, sticky = (N, W))
@@ -392,6 +397,8 @@ class Explorer(ttk.Frame):
         "called when checkbutton for showing tracks is toggled"
         if self.initialized:          
             self.initializeFile(self.fileFrame.selected, new = False, timeReset = False)
+            if not self.showTrackVar.get():
+                self.changedTime(value = self.curTime.get(), unit = "0-100")
 
 
     def toggleReflections(self):
@@ -409,8 +416,19 @@ class Explorer(ttk.Frame):
     def toggleShocks(self):
         "called when checkbutton for showing shocks is toggled"
         if self.initialized and self.showTrackVar.get():
-            self.initializeFile(self.fileFrame.selected, new = False, timeReset = False)                    
-            
+            self.initializeFile(self.fileFrame.selected, new = False, timeReset = False)
+
+
+    def toggleTail(self):
+        "called when checkbutton for showing tail is toggled"
+        if self.initialized and not self.showTrackVar.get():
+            if self.showTailVar.get():
+                self.initializeFile(self.fileFrame.selected, new = False, timeReset = False)
+                self.changedTime(value = self.curTime.get(), unit = "0-100")
+            else:
+                self.arenaCanv.delete("trailA")
+                self.roomCanv.delete("trailR")            
+
 
     def playFun(self):
         "starts animation"        
@@ -486,6 +504,7 @@ class Explorer(ttk.Frame):
         self.distanceVar.set("{:.1f}".format(dist))
         self.entrancesVar.set(entrances)
 
+        # selected parameter
         if self.selectedParameter.get():
             time = value / 60000
             startTime = self.minTime / 60000
@@ -494,14 +513,37 @@ class Explorer(ttk.Frame):
             except Exception:
                 self.selectedPVar.set("-")
 
-        Rx, Ry = curLine[2:4]
-        Ax, Ay = curLine[7:9]                              
+        # tail
+        if self.showTailVar.get():
+            self.arenaCanv.delete("trailA")
+            self.roomCanv.delete("trailR")
+            if curLine[0] >= 10:
+                end = curLine[0]
+                d = self.cm.getComputedDiameter()
+                start = end - 500 if end > 500 else 0
+                start = round(start*2, -1) // 2
+                trail = [tuple(content[2:4] + content[7:9]) for content in self.data[start:end:5]]
+                arena = []
+                room = []
+                for rx, ry, ax, ay in trail:
+                    arena.append((ax + 150 - d, ay + 150 - d))
+                    room.append((rx + 150 - d, ry + 150 - d))
+                arena.append((curLine[7] + 150 - d, curLine[8] + 150 - d))
+                room.append((curLine[2] + 150 - d, curLine[3] + 150 - d))
+                self.arenaCanv.create_line((arena), fill = "blue", width = 2, tag = "trailA")
+                self.roomCanv.create_line((room), fill = "blue", width = 2, tag = "trailR")                          
 
         # changes position of 'the rat'
+        Rx, Ry = curLine[2:4]
+        Ax, Ay = curLine[7:9]
+        
         self.arenaCanv.coords("ratA", (Ax + self.ld, Ay + self.ld,\
                                 Ax + self.ur, Ay + self.ur))
         self.roomCanv.coords("ratR", (Rx + self.ld, Ry + self.ld,\
                                 Rx + self.ur, Ry + self.ur))
+        
+        self.arenaCanv.lift("ratA")
+        self.roomCanv.lift("ratR")
 
         # changes color of 'the rat' in case of shock
         if curLine[6] > 0:
@@ -510,6 +552,7 @@ class Explorer(ttk.Frame):
         elif self.shock and curLine[6] <= 0:
             self.roomCanv.itemconfigure("ratR", fill = "black", outline = "black")
             self.shock = False       
+
 
         self.graph.changedTime(value)
 
@@ -666,11 +709,19 @@ class Explorer(ttk.Frame):
             
             Rx, Ry = curLine[2:4]
             Ax, Ay = curLine[7:9]
-            self.arenaCanv.create_oval(Ax + self.ld, Ay + self.ld, Ax + self.ur, Ay + self.ur,\
+
+            if self.showTailVar.get(): 
+                self.arenaCanv.create_line((Ax + 149 - d, Ay + 149 - d, Ax + 151 - d,
+                                            Ay + 151 - d), fill = "blue", width = 2,
+                                           tag = "trailA")
+                self.roomCanv.create_line((Rx + 149 - d, Ry + 149 - d, Rx + 151 - d, Ry + 151 - d),
+                                          fill = "blue", width = 2, tag = "trailR")   
+
+            self.arenaCanv.create_oval(Ax + self.ld, Ay + self.ld, Ax + self.ur, Ay + self.ur,
                                        fill = "black", tags = "ratA")
-            self.roomCanv.create_oval(Rx + self.ld, Ry + self.ld, Rx + self.ur, Ry + self.ur,\
+            self.roomCanv.create_oval(Rx + self.ld, Ry + self.ld, Rx + self.ur, Ry + self.ur,
                                        fill = "black", tags = "ratR")
-            
+                                                 
             # shock
             if curLine[6] > 0:
                 self.roomCanv.itemconfigure("ratR", fill = "red", outline = "red")
@@ -874,6 +925,8 @@ class Explorer(ttk.Frame):
                 self.fileFrame.selected = None
         else:
             self.fileFrame.selected = None
+
+        self.setTime()
             
         self.fileFrame.drawTree(self.fileFrame.selected)
 

@@ -21,7 +21,7 @@ from tkinter.filedialog import askopenfilenames, askdirectory, askopenfilename
 from tkinter import *
 from os.path import basename
 from tkinter import ttk
-from collections import defaultdict, deque
+from collections import defaultdict, deque, OrderedDict
 import os.path
 import os
 
@@ -599,12 +599,15 @@ class FileStorageFrame(ttk.Frame):
         
         # processing file
         infile = open(filename)
-        files = {}
+        files = OrderedDict()
         toTag = []
         comments = {}
+        addedReflections = {}
         for line in infile:
             if "Files processed" in line:
                 for line in infile:
+                    if not line.strip():
+                        break
                     if "Comment:" in line:
                         comments[arenafile] = line.split("Comment: ")[1]
                         continue
@@ -616,6 +619,12 @@ class FileStorageFrame(ttk.Frame):
                         files[arenafile] = ""
                         if len(words) >= 2 and words[1] == "Tagged":
                             toTag.append(arenafile)
+            elif "Added reflections" in line:
+                for line in infile:
+                    if line.startswith("\t\t"):
+                        addedReflections[file] = line.strip().split(",")
+                    elif line.startswith("\t"):
+                        file = line.strip()
             else:
                 continue
         infile.close()
@@ -650,6 +659,9 @@ class FileStorageFrame(ttk.Frame):
                             self.fileStorage.comments[arenafile] = newcomment
                     if files[file]:
                         self.fileStorage.pairedfiles[arenafile] = roomfile
+                    if file in addedReflections and addedReflections[file]:
+                        self.fileStorage.addReflections(file,
+                                                        set(map(int, addedReflections[file])))
                 else:
                     wrongfiles.append(arenafile)
             else:

@@ -33,6 +33,8 @@ class CM(object):
         "class CM represents data from carousel maze"
 
         self.nameA = nameA
+        self.data = []
+        self.interpolated = set()
         
         # automatic room frame filename creation
         if nameR == "auto":
@@ -48,9 +50,7 @@ class CM(object):
         if (self.nameA, self.nameR) in cache:
             self.__dict__ = cache[(self.nameA, self.nameR)]
             return
-
-        data = []
-
+     
         # processing data from room frame    
         infile = open(self.nameR, "r")
 
@@ -97,31 +97,34 @@ class CM(object):
 
 
         missing = []
-        self.interpolated = set()
 
         count = -1
         for line in infile:
+            try:
+                line = list(map(int, line.split()[:7]))
+                self.data.append(line)
+            except Exception:
+                continue
+    
             count += 1
-            line = list(map(int, line.split()[:7]))
-            data.append(line)
            
             # missing points
             if count + 1 != line[0]:
                 i = 2
                 while True:
-                    if data[-i][2] or data[-i][3]:
+                    if self.data[-i][2] or self.data[-i][3]:
                         break
                     else:
                         i += 1
-                before = data[-i][2:4]
-                prev = data[-2]
+                before = self.data[-i][2:4]
+                prev = self.data[-2]
                 number = line[0] - count
                 for row in range(1, number):
                     timeStamp = ((line[1] - prev[1]) / (number)) * row + prev[1]
                     filling = [count + 1, timeStamp, 0, 0] + prev[4:]
                     missing.append(count)
                     self.interpolated.add(count)
-                    data.insert(-1, filling)
+                    self.data.insert(-1, filling)
                     count += 1
                                      
             # wrong points
@@ -129,7 +132,7 @@ class CM(object):
                 continue
             elif line[2] == 0 and line[3] == 0 and missing == []:
                 if count != len(missing):
-                    before = data[count - 1][2:4]
+                    before = self.data[count - 1][2:4]
                     missing.append(count)
                     self.interpolated.add(count)
                 else:
@@ -143,15 +146,15 @@ class CM(object):
                 after = line[2:4]
                 if before != []:
                     for missCounter, missLines in enumerate(missing, start=1):
-                        data[missLines][2] = ((after[0] - before[0]) / (len(missing) + 1)) \
-                                               * missCounter + before[0]
-                        data[missLines][3] = ((after[1] - before[1]) / (len(missing) + 1)) \
-                                               * missCounter + before[1]
+                        self.data[missLines][2] = ((after[0] - before[0]) / (len(missing) + 1)) \
+                                                  * missCounter + before[0]
+                        self.data[missLines][3] = ((after[1] - before[1]) / (len(missing) + 1)) \
+                                                  * missCounter + before[1]
                 missing = []
         
         if missing != []:
             for missLines in missing:
-                data[missLines][2:4] = before
+                self.data[missLines][2:4] = before
 
         infile.close()
 
@@ -167,37 +170,39 @@ class CM(object):
 
         count = -1
         for line in infile:
-            count += 1
-            line = list(map(int, line.split()[:7]))
+            try:
+                line = list(map(int, line.split()[:7]))
+            except Exception:
+                continue
 
+            count += 1
+            
             # missing points
             if count + 1 != line[0]:
                 i = 1
                 while True:
-                    if data[count - i][7] or data[count - i][8]:
+                    if self.data[count - i][7] or self.data[count - i][8]:
                         break
                     else:
                         i += 1
-                before = data[count - i][7:9]
-                prev = data[count - 2][9:]
+                before = self.data[count - i][7:9]
+                prev = self.data[count - 2][9:]
                 number = line[0] - count
                 for row in range(1, number):
                     filling = [0, 0] + prev
                     missing.append(count)
                     self.interpolated.add(count)
-                    data[count] += filling
+                    self.data[count] += filling
                     count += 1
-
-            
-            data[count] += line[2:]
-         
+          
+            self.data[count] += line[2:]        
             
             # wrong points
             if (line[2] != 0 or line[3] != 0) and missing == []:
                  continue
             elif line[2] == 0 and line[3] == 0 and missing == []:
                 if count != len(missing):
-                    before = data[count - 1][7:9]
+                    before = self.data[count - 1][7:9]
                     missing.append(count)
                     self.interpolated.add(count)
                 else:
@@ -211,50 +216,39 @@ class CM(object):
                 after = line[2:4]
                 if before != []:
                     for missCounter, missLines in enumerate(missing, start=1):
-                        data[missLines][7] = ((after[0] - before[0]) / (len(missing) + 1)) \
-                                               * missCounter + before[0]
-                        data[missLines][8] = ((after[1] - before[1]) / (len(missing) + 1)) \
-                                               * missCounter + before[1]
+                        self.data[missLines][7] = ((after[0] - before[0]) / (len(missing) + 1)) \
+                                                  * missCounter + before[0]
+                        self.data[missLines][8] = ((after[1] - before[1]) / (len(missing) + 1)) \
+                                                  * missCounter + before[1]
                 missing = []
 
         if missing != []:
             for missLines in missing:
-                data[missLines][7:9] = before
-
-
-        
+                self.data[missLines][7:9] = before
+      
         beginMiss = 0
         
-        for line in data:
+        for line in self.data:
             if (line[2] == 0 and line [3] == 0) or (line[7] == 0 and line[8] == 0):
                 beginMiss += 1
             else:
                 if beginMiss != 0:
-                    data = data[beginMiss:]
-                    for i in range(len(data)):
-                        data[i][0] -= beginMiss
+                    self.data = self.data[beginMiss:]
+                    for i in range(len(self.data)):
+                        self.data[i][0] -= beginMiss
                 break
 
         infile.close()
-
         
         # exception used for example when all lines are wrong (all positions are 0, 0)
-        if not data:
+        if not self.data:
             raise Exception("Failure in data initialization.")
-
- 
-        # if some line is missing, it is skipped
-        # if file begins with missing points, they are deleted
-        # if file ends with missing points, position is imputed by the last available position
-        # missing points inside file are imputed by linear approximation
-        self.data = data
 
         # caching
         cache[(self.nameA, self.nameR)] = self.__dict__
         order.append((self.nameA, self.nameR))
         if len(order) > 10:
             del cache[order.popleft()]
-                     
         
 
     def getCenterX(self):

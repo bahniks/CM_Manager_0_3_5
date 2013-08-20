@@ -62,7 +62,8 @@ class Processor(ttk.Frame):
         self.process = ttk.Button(self, text = "Process Files", command = self.processFun,
                                   state = "disabled")
         self.useBatchTime = ttk.Checkbutton(self.timeLabFrame, text = "Use batch time",
-                                            variable = self.useBatchTimeVar)
+                                            variable = self.useBatchTimeVar,
+                                            command = self.toggledUseBatchTime)
         self.setBatchTimeBut = ttk.Button(self.timeLabFrame, text = "Set", width = 3,
                                           command = lambda: SetBatchTime(self))
 
@@ -287,6 +288,16 @@ class Processor(ttk.Frame):
             else:
                 self.status.set("File was processed successfully.")        
 
+
+    def toggledUseBatchTime(self):
+        "called when batch time checkbutton is toggled; disables or enables changing time"
+        if self.useBatchTimeVar.get():
+            self.timeFrame.totalTime.state(["disabled"])
+            self.timeFrame.startTime.state(["disabled"])
+        else:
+            self.timeFrame.totalTime.state(["!disabled"])
+            self.timeFrame.startTime.state(["!disabled"])
+
                 
     def checkProcessing(self):
         "method updating page after change of notebook tab"
@@ -341,7 +352,8 @@ class Log():
             self._writeTime(logfile)
             self._writeSaveIn(logfile)
             logfile.write("Reflections removed in:\n\t" + self.removeReflections + "\n\n\n")
-            self._writeFiles(logfile)   
+            self._writeFiles(logfile)
+            self._writeAddedReflections(logfile)
 
     def _writeProblems(self, logfile):
         "writes information about all problems in a logfile"
@@ -421,7 +433,19 @@ class Log():
             logfile.write("\n\t\tComment: " + self.fileStorage.comments[file])
         if file in self.fileStorage.pairedfiles:
             logfile.write("\n\t\tPaired with: " +
-                          self.fileStorage.pairedfiles[file])       
+                          self.fileStorage.pairedfiles[file])
+
+    def _writeAddedReflections(self, logfile):
+        if self.fileStorage.addedReflections and any(self.fileStorage.addedReflections.values()):
+            logfile.write("\n\nAdded reflections:")
+            for file in self.files:
+                if file in self.fileStorage.addedReflections:
+                    if self.fileStorage.addedReflections[file]:
+                        logfile.write("\n\t" + file + "\n\t\t")
+                        added = ",".join(str(p) for p in
+                                         sorted(self.fileStorage.addedReflections[file]))
+                        logfile.write(added)
+                    
 
 
 
@@ -436,7 +460,6 @@ class ProgressWindow(Toplevel):
         self.focus_set()
         self.grab_set()
         placeWindow(self, 404, 80)
-        self.geometry("+500+300")
         self.text = text
         self.resizable(FALSE, FALSE)
 

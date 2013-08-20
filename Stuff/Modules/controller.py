@@ -439,9 +439,7 @@ class Controller(ttk.Frame):
         name = item.rstrip("0123456789")
         tracks = self.controlReport.files # <- zmenit aby zobrazovalo serazene
         if item:
-            time = (self.timeFrame.startTimeVar.get(), self.timeFrame.timeVar.get())
-            showTracks = ShowTracks(self, nameA = name, tracks = tracks, time = time,
-                                    controlled = True)
+            showTracks = ShowTracks(self, nameA = name, tracks = tracks, controlled = True)
 
 
     def controlFun(self):
