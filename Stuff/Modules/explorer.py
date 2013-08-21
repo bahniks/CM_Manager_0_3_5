@@ -829,6 +829,7 @@ class Explorer(ttk.Frame):
                          command = lambda: self.graph.drawParameter(self.cm, "bad points"))
         menu.add_command(label = "Show thigmotaxis",
                          command = lambda: self.graph.drawParameter(self.cm, "thigmotaxis"))
+        menu.add_separator()
         menu.add_command(label = "Don't show anything",
                          command = lambda: self.graph.drawParameter(self.cm, None))
         menu.post(event.x_root, event.y_root)        
@@ -841,8 +842,9 @@ class Explorer(ttk.Frame):
         menu.add_radiobutton(label = "Don't show anything",
                              variable = self.selectedParameter, value = "nothing",
                              command = self._changedSelectedParameter)
+        menu.add_separator()
         for parameter in sorted(Parameters().parameters, key = lambda x: x[0]):
-            if parameter[2] != "info" and parameter[0] not in notAvailable:
+            if parameter[2] not in ["info", "custom"] and parameter[0] not in notAvailable:
                 menu.add_radiobutton(label = 'Show {}'.format(parameter[0].lower()),
                                      variable = self.selectedParameter, value = parameter[1],
                                      command = self._changedSelectedParameter)

@@ -91,6 +91,7 @@ class ShowTracks(Toplevel):
         else:
             label = "Disable manual reflection removal"
         menu.add_command(label = label, command = self.toggleManualReflectionRemoval)
+        menu.add_separator()
         if canvas:
             if canvas.addedReflections:
                 menu.add_command(label = "Undo manual changes", command = canvas.undoChanges)
@@ -584,8 +585,8 @@ class FileTree(ttk.Frame):
         "called when tree item is clicked on"
         item = self.tree.identify("item", event.x, event.y)
         menu = Menu(self, tearoff = 0)
-        file = self.files[int(item)]
         if item:
+            file = self.files[int(item)]
             menu.add_command(label = "Add comment", command = lambda: Comment(self, file))
             if file in self.fileStorage.tagged:
                 menu.add_command(label = "Remove tag", command = lambda: self.untagFun(index =
@@ -599,7 +600,8 @@ class FileTree(ttk.Frame):
             menu.add_command(label = 'Leave only Reflections', command = lambda:
                                  self.leaveOnlyFun("Reflections"))
             menu.add_command(label = 'Leave only Outside Points', command = lambda:
-                                 self.leaveOnlyFun("Outside Points"))                       
+                                 self.leaveOnlyFun("Outside Points"))
+            menu.add_separator()
             menu.add_command(label = "Return all", command = lambda: self.leaveOnlyFun("all"))
         menu.post(event.x_root, event.y_root)
 

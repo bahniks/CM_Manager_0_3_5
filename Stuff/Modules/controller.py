@@ -344,6 +344,7 @@ class Controller(ttk.Frame):
         else:
             menu.add_command(label = "Add tag", command = lambda: self.addTag(name))
         menu.add_command(label = "Add comment", command = lambda: Comment(self, name))
+        menu.add_separator()
         menu.add_command(label = "Open arena file", command = lambda: self.openFile("arena", name))
         menu.add_command(label = "Open room file", command = lambda: self.openFile("room", name))
         menu.post(event.x_root, event.y_root)
@@ -360,6 +361,7 @@ class Controller(ttk.Frame):
         menu.add_command(label = "Add tags to all files with at least a concern",
                          command = lambda: self.addMoreTags(item, specified =
                                                             ["Problem", "Warning", "Concern"]))
+        menu.add_separator()
         menu.add_command(label = "Remove tags from all problem files",
                          command = lambda: self.removeMoreTags(item, specified = ["Problem"]))
         menu.add_command(label = "Remove tags from all files with at least a warning",

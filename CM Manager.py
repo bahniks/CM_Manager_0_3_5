@@ -25,6 +25,7 @@ import zipfile
 import os
 import shutil
 import sys
+import imp
 
 
 def returnSiteContent(link):
@@ -65,6 +66,8 @@ def checkNewVersion(version):
                 root.config(cursor = "wait")
                 try:
                     download(newVersion)
+                    if "version" in sys.modules:
+                        imp.reload(sys.modules["version"])
                 except Exception as e:
                     messagebox.showinfo(title = "Error", icon = "error", detail = e,
                                         message = "Some problem with updating occured.")
@@ -116,10 +119,26 @@ def download(version):
     if not os.path.exists(os.path.join(stuffname, "Parameters")):
         os.mkdir(os.path.join(stuffname, "Parameters"))
     for file in os.listdir(os.path.join(unzipped, "Stuff", "Parameters")):        
-        old = os.path.join(stuffname, "Parameters", file)       
+        old = os.path.join(stuffname, "Parameters", file)
+        new = os.path.join(unzipped, "Stuff", "Parameters", file)
         if not os.path.exists(old):
-            new = os.path.join(unzipped, "Stuff", "Parameters", file)
             os.rename(new, old)
+        elif file == "template.py":
+            os.remove(old)
+            os.rename(new, old)
+
+    # updating data formats - implemented for the future, not yet used
+    if os.path.exists(os.path.join(unzipped, "Stuff", "Data formats")):
+        if not os.path.exists(os.path.join(stuffname, "Data formats")):
+            os.mkdir(os.path.join(stuffname, "Data formats"))
+        for file in os.listdir(os.path.join(unzipped, "Stuff", "Data formats")):        
+            old = os.path.join(stuffname, "Data formats", file)
+            new = os.path.join(unzipped, "Stuff", "Data formats", file)
+            if not os.path.exists(old):
+                os.rename(new, old)
+            elif file == "template.py":
+                os.remove(old)
+                os.rename(new, old)
             
     # updating files in Stuff directory
     for file in os.listdir(os.path.join(unzipped, "Stuff")):

@@ -560,12 +560,12 @@ class ParameterFrame(ttk.Labelframe):
         info = ttk.Labelframe(self, text = "Information")
         experimental = ttk.Labelframe(self, text = "Experimental")
         custom = ttk.Labelframe(self, text = "Custom Written")
-        basic.grid(column = 0, row = 0, sticky = (N, S, W), padx = 3, pady = 2)
-        advanced.grid(column = 1, row = 0, sticky = (N, S, W), padx = 3, pady = 2)
-        double.grid(column = 2, row = 0, sticky = (N, S, W), padx = 3, pady = 2)
-        info.grid(column = 3, row = 0, sticky = (N, S, W), padx = 3, pady = 2)
-        experimental.grid(column = 4, row = 0, sticky = (N, S, W), padx = 3, pady = 2)
-        custom.grid(column = 5, row = 0, sticky = (N, S, W), padx = 3, pady = 2)
+        basic.grid(column = 0, row = 0, sticky = (N, S, W), padx = 3, pady = 4)
+        advanced.grid(column = 1, row = 0, sticky = (N, S, W), padx = 3, pady = 4)
+        double.grid(column = 2, row = 0, sticky = (N, S, W), padx = 3, pady = 4)
+        info.grid(column = 3, row = 0, sticky = (N, S, W), padx = 3, pady = 4)
+        experimental.grid(column = 4, row = 0, sticky = (N, S, W), padx = 3, pady = 4)
+        custom.grid(column = 5, row = 0, sticky = (N, S, W), padx = 3, pady = 4)
 
         basicNum = 0
         advancedNum = 0
@@ -615,6 +615,7 @@ class ParameterFrame(ttk.Labelframe):
         menu.add_command(label = "Select all", command = lambda: self._selectAll(category))
         menu.add_command(label = "Unselect all", command = lambda: self._unselectAll(category))
         if category == "all":
+            menu.add_separator()
             menu.add_command(label = "Save selected parameters as default",
                              command = lambda: self.saveSelectedParametersAsDefault())
         menu.post(event.x_root, event.y_root)

@@ -48,11 +48,11 @@ class GUI(Tk):
         self.resizable(FALSE, FALSE)
         
         '''
-        used when size of the window is changed for placeWindow arguments     
+        # used when size of the window is changed for placeWindow arguments     
         self.after(250, lambda: print(self.winfo_width()))
         self.after(250, lambda: print(self.winfo_height()))
         '''
-        placeWindow(self, 1010, 809)
+        placeWindow(self, 1010, 834)
 
         # notebook
         self.selectFunction = ttk.Notebook(self)

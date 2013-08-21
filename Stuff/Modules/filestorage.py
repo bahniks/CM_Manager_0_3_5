@@ -386,9 +386,11 @@ class ShowFiles(Toplevel):
             else:
                 menu.add_command(label = "Add tag", command = lambda: self.tagFun(item))
             menu.add_command(label = "Add comment", command = lambda: Comment(self, item))
+            menu.add_separator()
             if self.filesTree.identify("column", event.x, event.y) == "#0":
                 menu.add_command(label = "Open room file",
                                  command = lambda: self.openRoomFile(item))
+                menu.add_separator()
             menu.add_command(label = "Show track", command = lambda: self.showTracks(item))
         if item and self.shownFiles == "wrongfiles" and len(self.filesTree.selection()) == 2:
             menu.add_command(label = "Pair selected", command = lambda: self.forcePair())

@@ -28,7 +28,7 @@ from statistics import median
 
 
 
-class CM(object):
+class CM:
     def __init__(self, nameA, nameR = "auto", cache = {}, order = deque()):
         "class CM represents data from carousel maze"
 

@@ -52,7 +52,11 @@ def loadFileStorage(root):
     file = askopenfilename(filetypes = [("Filestorage", "*.files")], initialdir = initialdir)
     if file:
         with open(file, mode = "rb") as infile:
-            root.selectFunction.fileStorage.__dict__ = pickle.load(infile).__dict__
+            loaded = pickle.load(infile).__dict__
+            current = root.selectFunction.fileStorage.__dict__
+            for key in loaded:
+                if key in current:
+                    current[key] = loaded[key]
         root.checkProcessing(None)
 
 

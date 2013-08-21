@@ -1,6 +1,10 @@
 """
 This file is a template for writing custom parameters.
-template.py itself won't load. All other .py files in the Parameters directory will.
+template.py itself won't load. All other .py files in the Parameters directory will. However, the
+files have to be properly named (one word names without special characters should work).
+
+This file is automatically replaced when CMM is updated.
+Therefore, DO NOT STORE IMPORTANT CHANGES DIRECTLY IN THIS FILE!
 
 Python tutorial can be found here: http://docs.python.org/3.2/tutorial/index.html
 Python library reference can be found here: http://docs.python.org/3.2/library/index.html
@@ -65,7 +69,7 @@ def parameter(cm, time = 20, startTime = 0): # the function must have name 'para
             
     dist = dist / (cm.trackerResolution * 100) # conversion from pixels to metres
     
-    return round(dist, 2)
+    return format(dist, "0.2f")
 
 
 """

@@ -40,24 +40,28 @@ class MenuCM(Menu):
 
         self.menu_file = Menu(self)
         self.menu_options = Menu(self)
-        self.menu_tools = Menu(self)
+        #self.menu_tools = Menu(self) # for future
         self.menu_help = Menu(self)
         
         menuWidth = 8
         self.add_cascade(menu = self.menu_file, label = "{:^{}}".format("File", menuWidth))
         self.add_cascade(menu = self.menu_options, label = "{:^{}}".format("Options", menuWidth))
-        self.add_cascade(menu = self.menu_tools, label = "{:^{}}".format("Tools", menuWidth))
+        #self.add_cascade(menu = self.menu_tools, label = "{:^{}}".format("Tools", menuWidth))
         self.add_cascade(menu = self.menu_help, label = "{:^{}}".format("Help", menuWidth))
 
+        self.menu_file.add_command(label = "Load selected files", command = self.loadSavedFiles)
+        self.menu_file.add_command(label = "Save selected files", command = self.saveLoadedFiles)
+        self.menu_file.add_separator()
         self.menu_file.add_command(label = "Exit", command = self.exitCM)
         self.menu_options.add_command(label = "Options", command = self.options)
         self.menu_options.add_command(label = "Parameter settings", command = self.advOptions)
+        self.menu_options.add_separator()
         self.menu_options.add_command(label = "Reset all options", command = self.resetOptions)
-        self.menu_tools.add_command(label = "Save selected files", command = self.saveLoadedFiles)
-        self.menu_tools.add_command(label = "Load selected files", command = self.loadSavedFiles)
         self.menu_help.add_command(label = "About", command = self.about)
-        self.menu_help.add_command(label = "Check for updates", command = self.checkUpdates)
         self.menu_help.add_command(label = "Citation", command = self.citation)
+        self.menu_help.add_separator()
+        self.menu_help.add_command(label = "Check for updates", command = self.checkUpdates)
+        self.menu_help.add_separator()        
         self.menu_help.add_command(label = "Help", command = self.helpCM)
 
     def exitCM(self):
