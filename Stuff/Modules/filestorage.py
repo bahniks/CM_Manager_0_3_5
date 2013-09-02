@@ -46,9 +46,11 @@ class FileStorage(object):
         self.lastSave = None
 
     def __iter__(self):
+        "abbreviation of 'for file in FileStorage.arenafiles' is now 'for file in FileStorage'"
         return iter(self.arenafiles)
 
     def __len__(self):
+        "abbreviation of 'len(FileStorage.arenafiles)' is now 'len(FileStorage)'"
         return len(self.arenafiles)
 
 

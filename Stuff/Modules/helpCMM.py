@@ -26,6 +26,9 @@ import os.path
 import os
 
 
+from window import placeWindow
+
+
 
 class HelpCM(Toplevel):
     "help window reachable from menu"
@@ -40,7 +43,7 @@ class HelpCM(Toplevel):
         self["pady"] = 7
         
         self.title("Help")
-        self.geometry("+695+135")
+        placeWindow(self, 806, 699)
         self.resizable(FALSE, FALSE)
 
         self.goneThrough = [[""], 0] # variable containing lists of items gone through and their

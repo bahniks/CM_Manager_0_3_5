@@ -92,7 +92,7 @@ class SetBatchTime(Toplevel):
         # frames
         self.buttonFrame = ttk.Frame(self)
         self.removeFrame = ttk.Frame(self)
-        self.timeFrame = TimeFrame(self)
+        self.timeFrame = TimeFrame(self, observe = False)
 
         # buttons
         self.okBut = ttk.Button(self, text = "Ok", command = self.okFun)
@@ -109,7 +109,7 @@ class SetBatchTime(Toplevel):
         self.text.bind("<3>", lambda e: self.popUp(e))
         if not self.developer:
             self.text["state"] = "disabled"
-            self.text["background"] = self.__color()
+            self.text["background"] = self._color()
         else:
             self.addBut["state"] = "disabled"
             self.removeLastBut["state"] = "disabled"
@@ -139,7 +139,7 @@ class SetBatchTime(Toplevel):
                    width = 3).grid(column = 1, row = 1)
 
 
-    def __color(self):
+    def _color(self):
         return "grey94"
         
     def okFun(self):
@@ -230,7 +230,7 @@ class SetBatchTime(Toplevel):
             return
         self.manualChangeEnabled = False
         self.text["state"] = "disabled"
-        self.text["background"] = self.__color()
+        self.text["background"] = self._color()
         self.addBut["state"] = "normal"
         self.removeLastBut["state"] = "normal"
 

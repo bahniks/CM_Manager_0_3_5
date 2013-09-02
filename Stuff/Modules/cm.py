@@ -35,7 +35,7 @@ class CM:
         self.nameA = nameA
         self.data = []
         self.interpolated = set()
-        
+
         # automatic room frame filename creation
         if nameR == "auto":
             splitname = os.path.split(nameA)
@@ -45,6 +45,8 @@ class CM:
                 self.nameR = os.path.join(splitname[0], splitname[1].replace("arena", "room"))
             else:
                 raise IOError
+        else:
+            self.nameR = nameR
 
         # in cache?
         if (self.nameA, self.nameR) in cache:
