@@ -18,7 +18,7 @@ along with Carousel Maze Manager.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from math import degrees, atan2, sin, cos, pi, radians, sqrt
-from collections import deque
+from collections import deque, OrderedDict
 import os.path
 import os
 
@@ -29,7 +29,9 @@ from statistics import median
 
 
 class CM:
-    def __init__(self, nameA, nameR = "auto", cache = {}, order = deque()):
+    cache = OrderedDict()
+    
+    def __init__(self, nameA, nameR = "auto"):
         "class CM represents data from carousel maze"
 
         self.nameA = nameA
@@ -49,8 +51,8 @@ class CM:
             self.nameR = nameR
 
         # in cache?
-        if (self.nameA, self.nameR) in cache:
-            self.__dict__ = cache[(self.nameA, self.nameR)]
+        if (self.nameA, self.nameR) in CM.cache:
+            self.__dict__ = CM.cache[(self.nameA, self.nameR)]
             return
      
         # processing data from room frame    
@@ -247,10 +249,9 @@ class CM:
             raise Exception("Failure in data initialization.")
 
         # caching
-        cache[(self.nameA, self.nameR)] = self.__dict__
-        order.append((self.nameA, self.nameR))
-        if len(order) > 10:
-            del cache[order.popleft()]
+        CM.cache[(self.nameA, self.nameR)] = self.__dict__
+        if len(CM.cache) > 10:
+            CM.cache.popitem(last = False)
         
 
     def getCenterX(self):
@@ -854,6 +855,9 @@ class CM:
                           tuple(row[7:9]) in toDeleteArena}
                  
         missing = sorted(rows | addMissing)
+
+        if missing and (self.nameA, self.nameR) in CM.cache:
+            CM.cache.pop((self.nameA, self.nameR))              
 
         # 'removal' itself
         while missing:           
