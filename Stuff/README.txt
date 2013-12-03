@@ -16,4 +16,7 @@ That may lead to duplication of files in loaded files if the same file is
 loaded with both new and old representation. The old representation still 
 works. There is no problem with duplication if a file is loaded by two ways 
 using the current version (e.g. when a file is added by loading from a log 
-that was created by the current version and by 'Add files'). 
+that was created by the current version and by 'Add files').
+
+Time to first, proportion of time moving and maximum immobility do not take
+into account changed starting time - they always use 0 as a starting time. 
